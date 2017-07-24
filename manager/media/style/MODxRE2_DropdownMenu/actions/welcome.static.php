@@ -315,7 +315,8 @@ $widgets['welcome'] = array(
 						<!--@ENDIF-->
 					</table>
 				</div>
-'
+		',
+	'hide'=>'0'	
 );
 $widgets['onlineinfo'] = array(
 	'menuindex' => '20',
@@ -323,7 +324,8 @@ $widgets['onlineinfo'] = array(
 	'cols' => 'col-sm-6',
 	'icon' => 'fa-user',
 	'title' => '[%onlineusers_title%]',
-	'body' => '<div class="userstable">[+OnlineInfo+]</div>'
+	'body' => '<div class="userstable">[+OnlineInfo+]</div>',
+	'hide'=>'0'	
 );
 $widgets['recentinfo'] = array(
 	'menuindex' => '30',
@@ -331,7 +333,8 @@ $widgets['recentinfo'] = array(
 	'cols' => 'col-sm-12',
 	'icon' => 'fa-pencil-square-o',
 	'title' => '[%activity_title%]',
-	'body' => '<div class="widget-stage">[+RecentInfo+]</div>'
+	'body' => '<div class="widget-stage">[+RecentInfo+]</div>',
+	'hide'=>'0'	
 );
 $widgets['news'] = array(
 	'menuindex' => '40',
@@ -339,7 +342,8 @@ $widgets['news'] = array(
 	'cols' => 'col-sm-6',
 	'icon' => 'fa-rss',
 	'title' => '[%modx_news_title%]',
-	'body' => '<div style="max-height:200px;overflow-y: scroll;padding: 1rem .5rem">[+modx_news_content+]</div>'
+	'body' => '<div style="max-height:200px;overflow-y: scroll;padding: 1rem .5rem">[+modx_news_content+]</div>',
+	'hide'=>'0'	
 );
 $widgets['security'] = array(
 	'menuindex' => '50',
@@ -347,14 +351,18 @@ $widgets['security'] = array(
 	'cols' => 'col-sm-6',
 	'icon' => 'fa-exclamation-triangle',
 	'title' => '[%security_notices_title%]',
-	'body' => '<div style="max-height:200px;overflow-y: scroll;padding: 1rem .5rem">[+modx_security_notices_content+]</div>'
+	'body' => '<div style="max-height:200px;overflow-y: scroll;padding: 1rem .5rem">[+modx_security_notices_content+]</div>',
+	'hide'=>'0'	
 );
 
 // invoke OnManagerWelcomeHome event
 $sitewidgets = $modx->invokeEvent("OnManagerWelcomeHome", array('widgets' => $widgets));
-$sitewidgets = unserialize($sitewidgets[0]);
 if(is_array($sitewidgets)) {
-	$widgets = $sitewidgets;
+	$newwidgets = array();
+    foreach($sitewidgets as $widget){
+        $newwidgets = array_merge($newwidgets, unserialize($widget));
+    }
+    $widgets = (count($newwidgets) > 0) ? $newwidgets : $widgets;
 }
 
 usort($widgets, function ($a, $b) {
@@ -364,17 +372,11 @@ usort($widgets, function ($a, $b) {
 $tpl = getTplWidget();
 $output = '';
 foreach($widgets as $widget) {
-	$output .= $modx->parseText($tpl, $widget);
+	if ($widget['hide'] != '1'){
+		$output .= $modx->parseText($tpl, $widget);
+	}
 }
 $ph['widgets'] = $output;
-
-// invoke OnManagerWelcomeHome event
-$sitewidgets = $modx->invokeEvent("OnManagerWelcomeHome", array('widgets' => $widgets));
-if(is_array($sitewidgets)) {
-	foreach($sitewidgets as $widget){
-		$widgets = array_merge($widgets, unserialize($widget));
-	} 
-}
 
 // load template
 if(!isset($modx->config['manager_welcome_tpl']) || empty($modx->config['manager_welcome_tpl'])) {
@@ -559,7 +561,7 @@ function getRecentInfoRowTpl() {
 						<tr>
 							<td data-toggle="collapse" data-target=".collapse[+id+]" class="text-right"><span class="label label-info">[+id+]</span></td>
 							<td data-toggle="collapse" data-target=".collapse[+id+]"><a class="[+status+]" title="[%edit_resource%]" href="index.php?a=3&amp;id=[+id+]">[+pagetitle+]</a></td>
-							<td data-toggle="collapse" data-target=".collapse[+id+]" class="text-right">[+editedon:math("%s+[(server_offset_time)]"):dateFormat+]</td>
+							<td data-toggle="collapse" data-target=".collapse[+id+]" class="text-right text-nowrap">[+editedon:math("%s+[(server_offset_time)]"):dateFormat+]</td>
 							<td data-toggle="collapse" data-target=".collapse[+id+]">[+username+]</td>
 							<td style="text-align: right;" class="actions">[+edit_btn+][+preview_btn+][+delete_btn+][+publish_btn+][+info_btn+]</td>
 						</tr>
